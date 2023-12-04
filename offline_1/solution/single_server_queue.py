@@ -177,12 +177,20 @@ class SingleServerQueue:
 
 
 if __name__ == "__main__":
-    with open("in.txt", "r") as f:
-        lines = f.readlines()
-        inputs = list(map(float, lines[0].split(" ")))
-        mean_interarrival = inputs[0]
-        mean_service = inputs[1]
-        num_delays_required = int(inputs[2])
+    mean_interarrival = 0.0
+    mean_service = 0.0
+    num_delays_required = 0
+    
+    try:
+        with open("in.txt", "r") as f:
+            lines = f.readlines()
+            inputs = list(map(float, lines[0].split(" ")))
+            mean_interarrival = inputs[0]
+            mean_service = inputs[1]
+            num_delays_required = int(inputs[2])
+    except:
+        print("Error reading input file")
+        exit(1)
 
     single_server_queue = SingleServerQueue(mean_interarrival, mean_service, num_delays_required)
     single_server_queue.run()
