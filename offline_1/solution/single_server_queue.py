@@ -2,7 +2,6 @@ import math
 from enum import Enum
 import pmmlcg
 
-
 class ServerStatus(Enum):
     IDLE = 0
     BUSY = 1
@@ -46,7 +45,11 @@ class SingleServerQueue:
 
         # initialize event output files
         open(self.event_orders_filename, "w").close()
-        open(self.stats_filename, "w").close()
+        with open(self.stats_filename, "w") as f:
+            f.write("----Single-Server Queueing System----\n\n")
+            f.write(f"Mean interarrival time: {self.mean_interarrival:.6f} minutes\n")
+            f.write(f"Mean service time: {self.mean_service:.6f} minutes\n")
+            f.write(f"Number of customers: {self.num_delays_required}\n\n")
 
     def __random__(self, mean):
         return -mean * math.log(pmmlcg.lcgrand(1))
@@ -146,11 +149,11 @@ class SingleServerQueue:
                 self.time_arrival[i] = self.time_arrival[i + 1]
 
     def report(self):        
-        with open(self.stats_filename, "w") as f:
-            f.write(f"Average delay in queue: {self.total_of_delays / self.num_customers_delayed}\n")
-            f.write(f"Average number in queue: {self.area_num_in_queue / self.sim_time}\n")
-            f.write(f"Server utilization: {self.area_server_status / self.sim_time}\n")
-            f.write(f"Time simulation ended: {self.sim_time}\n")
+        with open(self.stats_filename, "a") as f:
+            f.write(f"Average delay in queue: {self.total_of_delays / self.num_customers_delayed:.6f} minutes\n")
+            f.write(f"Average number in queue: {self.area_num_in_queue / self.sim_time:.6f}\n")
+            f.write(f"Server utilization: {self.area_server_status / self.sim_time:.6f}\n")
+            f.write(f"Time simulation ended: {self.sim_time:.6f} minutes\n")
 
     def update_time_avg_stats(self):
         time_since_last_event = self.sim_time - self.time_last_event
@@ -160,7 +163,6 @@ class SingleServerQueue:
         self.area_server_status += self.server_status.value * time_since_last_event
 
     def run(self):
-
         while self.num_customers_delayed < self.num_delays_required:
             self.timing()
             self.update_time_avg_stats()
@@ -184,3 +186,5 @@ if __name__ == "__main__":
 
     single_server_queue = SingleServerQueue(mean_interarrival, mean_service, num_delays_required)
     single_server_queue.run()
+
+    print("Simulation ended")
