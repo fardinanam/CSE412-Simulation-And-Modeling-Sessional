@@ -1,9 +1,15 @@
 import numpy as np
 from tqdm import tqdm
 
-np.random.seed(0)
+np.random.seed(13)
 
 class MonteCarloSimulation:
+  def _probability_of_i_offspring(self, i: int) -> float:
+    if i < 1:
+      raise ValueError("i must be greater than 0.")
+    
+    return self.p * (self.q ** (i - 1))
+  
   def __init__(self, p, q, max_offsprings, max_population) -> None:
     """
     Initializes the Monte Carlo simulation.
@@ -24,33 +30,10 @@ class MonteCarloSimulation:
     self.max_offsprings = max_offsprings
     self.max_population = max_population
 
-  def probability_of_i_offspring(self, i: int) -> float:
-    """
-    Calculates the probability of having i offsprings. Here, i > 0.
-    """
-    if i <= 0:
-      raise ValueError("i must be greater than 0.")
-    
-    return self.p * (self.q ** (i - 1))
+    self.ps = [self._probability_of_i_offspring(i) for i in range(1, max_offsprings + 1)]
+    self.ps.insert(0, 1 - sum(self.ps))
 
-  def probabilities(self, n: int) -> list:
-    """
-    Calculates the probabilities of having 0 to n offsprings.
-
-    Parameters:
-    ----------
-    n: int
-      Maximum number of offsprings
-
-    Returns:
-    -------
-    list
-      A list of probabilities of having 0 to n offsprings.
-    """
-    ps = [self.probability_of_i_offspring(i) for i in range(1, n + 1)]
-    ps.insert(0, 1 - sum(ps))
-
-    return ps
+    print(self.ps)
 
   def generate_new_generation(self, n: int) -> int:
     """
@@ -69,15 +52,14 @@ class MonteCarloSimulation:
     n_new = 0
 
     for _ in range(n):
-      ps = self.probabilities(self.max_offsprings)
-      n_new += np.random.choice(range(self.max_offsprings + 1), p=ps)
+      n_new += np.random.choice(range(self.max_offsprings + 1), p=self.ps)
 
     return n_new
 
   def simulate(self, generations: int, trials: int) -> float:
     self.generations = generations
     
-    counts = np.zeros((generations, self.max_population + 1))
+    counts = np.zeros((generations, self.max_population + 1), dtype=int)
 
     for _ in tqdm(range(trials)):
       gen = 0
