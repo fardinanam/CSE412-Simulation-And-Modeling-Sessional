@@ -33,7 +33,11 @@ def success_rate_m(n: int, m: int, s: int, trials: int) -> float:
   successes = 0
   for _ in range(trials):
     ranks = np.random.permutation(n)
-    best = ranks[:m + 1].min()
+
+    if m == 0:
+      best = n
+    else:
+      best = ranks[:m].min()
 
     chosen = ranks[-1]
     for i in range(m, n):
